@@ -1,22 +1,48 @@
 Installation
 ============
 
-* Add SonataNewsBundle to your vendor/bundles dir with the deps file:
 
-.. code-block:: json
+Prerequisites
+-------------
 
-    //composer.json
-    "require": {
-    //...
-        "sonata-project/news-bundle": "dev-master",
-        "sonata-project/doctrine-orm-admin-bundle": "dev-master",
-        "sonata-project/easy-extends-bundle": "dev-master",
-        "sonata-project/classification-bundle": "~2.2@dev",
-    //...
-    }
+PHP 5.3 and Symfony 2 are needed to make this bundle work ; there are also some
+Sonata dependencies that need to be installed and configured beforehand:
 
+    - SonataAdminBundle_
+    - SonataUserBundle_
+    - SonataMediaBundle_
+    - SonataClassificationBundle_
+    - SonataFormatterBundle_
+    - SonataEasyExtendsBundle_
+    - SonataIntlBundle_
+    - SonataDatagridBundle_
+    - SonataCoreBundle_
 
-* Add SonataNewsBundle to your application kernel:
+Follow also their configuration steps; you will find everything you need in their installation chapter.
+
+.. note::
+
+    If a dependency is already installed somewhere in your project or in
+    another dependency, you won't need to install it again.
+
+Enable the Bundle
+-----------------
+
+.. code-block:: bash
+
+    $ php composer.phar require sonata-project/news-bundle --no-update
+    $ php composer.phar require sonata-project/doctrine-orm-admin-bundle  --no-update # optional
+    $ php composer.phar require friendsofsymfony/rest-bundle  --no-update # optional when using api
+    $ php composer.phar require nelmio/api-doc-bundle  --no-update # optional when using api
+    $ php composer.phar update
+
+.. note::
+
+    The SonataAdminBundle and SonataDoctrineORMAdminBundle must be installed, please refer to `the dedicated documentation for more information <https://sonata-project.org/bundles/admin>`_.
+
+    The `SonataDatagridBundle <https://github.com/sonata-project/SonataDatagridBundle>`_ must be added in ``composer.json``.
+
+Next, be sure to enable the ``News`` and ``EasyExtends`` bundles in your application kernel:
 
 .. code-block:: php
 
@@ -27,54 +53,60 @@ Installation
     {
         return array(
             // ...
-            new Sonata\CoreBundle\SonataCoreBundle(),
-            new Sonata\MarkItUpBundle\SonataMarkItUpBundle(),
-            new Ivory\CKEditorBundle\IvoryCKEditorBundle(),
             new Sonata\NewsBundle\SonataNewsBundle(),
-            new Sonata\UserBundle\SonataUserBundle(),
-            new Sonata\MediaBundle\SonataMediaBundle(),
-            new Sonata\AdminBundle\SonataAdminBundle(),
-            new Sonata\IntlBundle\SonataIntlBundle(),
-            new Sonata\FormatterBundle\SonataFormatterBundle(),
-            new Sonata\ClassificationBundle\SonataClassificationBundle(),
-            new FOS\UserBundle\FOSUserBundle(),
-            new Knp\Bundle\MarkdownBundle\KnpMarkdownBundle(),
-            new Knp\Bundle\MenuBundle\KnpMenuBundle(),
-            new Sonata\DoctrineORMAdminBundle\SonataDoctrineORMAdminBundle(),
             new Sonata\EasyExtendsBundle\SonataEasyExtendsBundle(),
-            new JMS\SerializerBundle\JMSSerializerBundle(),
             // ...
         );
     }
 
+Before we can go on with generating our Application files trough the `EasyExtendsBundle`_, we need to add some lines which we will override later (we need them now only for the following step):
 
-* Create a configuration file : ``sonata_news.yml``:
+.. configuration-block::
 
-.. code-block:: yaml
+    .. code-block:: yaml
 
-    sonata_news:
-        title:        Sonata Project
-        link:         https://sonata-project.org
-        description:  Cool bundles on top of Symfony2
-        salt:         'secureToken'
-        permalink_generator: sonata.news.permalink.date # sonata.news.permalink.collection
+        # app/config/config.yml
 
-        comment:
-            notification:
-                emails:   [email@example.org, email2@example.org]
-                from:     no-reply@sonata-project.org
-                template: 'SonataNewsBundle:Mail:comment_notification.txt.twig'
+        sonata_news:
+            title:        Sonata Project
+            link:         https://sonata-project.org
+            description:  Cool bundles on top of Symfony2
+            salt:         'secureToken'
+            permalink_generator: sonata.news.permalink.date # sonata.news.permalink.collection
 
-    doctrine:
-        orm:
-            entity_managers:
-                default:
-                    #metadata_cache_driver: apc
-                    #query_cache_driver: apc
-                    #result_cache_driver: apc
-                    mappings:
-                        ApplicationSonataNewsBundle: ~
-                        SonataNewsBundle: ~
+            comment:
+                notification:
+                    emails:   [email@example.org, email2@example.org]
+                    from:     no-reply@sonata-project.org
+                    template: 'SonataNewsBundle:Mail:comment_notification.txt.twig'
+
+Configuration
+-------------
+
+To use the ``PageBundle``, add the following lines to your application
+configuration file.
+
+.. note::
+
+    If your ``auto_mapping`` have a ``false`` value, add these lines to your
+    mapping configuration :
+
+.. configuration-block::
+
+    .. code-block:: yaml
+
+        # app/config/config.yml
+
+        doctrine:
+            orm:
+                entity_managers:
+                    default:
+                        #metadata_cache_driver: apc
+                        #query_cache_driver: apc
+                        #result_cache_driver: apc
+                        mappings:
+                            ApplicationSonataNewsBundle: ~
+                            SonataNewsBundle: ~
 
 * import the ``sonata_news.yml`` file and enable json type for doctrine:
 
@@ -180,3 +212,36 @@ Update database schema by running command ``php app/console doctrine:schema:upda
         resource: '@SonataNewsBundle/Resources/config/routing/news.xml'
         prefix: /news
 
+Enable the extended Bundle
+--------------------------
+
+.. code-block:: php
+
+    <?php
+    // app/AppKernel.php
+
+    public function registerBundles()
+    {
+        return array(
+            // ...
+
+            // Application Bundles
+            new Application\Sonata\NewsBundle\ApplicationSonataNewsBundle(),
+
+            // ...
+        );
+    }
+
+And now, you're good to go !
+
+
+.. _SonataAdminBundle: https://sonata-project.org/bundles/admin
+.. _SonataUserBundle: https://sonata-project.org/bundles/user
+.. _SonataMediaBundle: https://sonata-project.org/bundles/media
+.. _SonataClassificationBundle: https://sonata-project.org/bundles/classification
+.. _SonataFormatterBundle: https://sonata-project.org/bundles/formatter
+.. _SonataEasyExtendsBundle: https://sonata-project.org/bundles/easy-extends
+.. _SonataIntlBundle: https://sonata-project.org/bundles/intl
+.. _SonataDatagridBundle: https://sonata-project.org/bundles/datagrid
+.. _EasyExtendsBundle: https://sonata-project.org/bundles/easy-extends/master/doc/index.html
+.. _SonataCoreBundle: https://sonata-project.org/bundles/core
