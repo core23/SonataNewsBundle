@@ -14,7 +14,7 @@ namespace Sonata\NewsBundle\Model;
 use Sonata\CoreBundle\Model\ManagerInterface;
 use Sonata\CoreBundle\Model\PageableManagerInterface;
 
-interface CommentManagerInterface extends ManagerInterface, PageableManagerInterface
+interface CommentManagerInterface extends PageableManagerInterface
 {
     /**
      * Update the number of comment for a comment.
